@@ -1,9 +1,6 @@
 package br.com.agendai.agendai.controller;
 
-import br.com.agendai.agendai.model.PrioridadeTarefa;
-import br.com.agendai.agendai.model.RequisicaoCriacaoTarefa;
-import br.com.agendai.agendai.model.StatusTarefa;
-import br.com.agendai.agendai.model.Tarefa;
+import br.com.agendai.agendai.model.*;
 import br.com.agendai.agendai.service.ObterEstatisticas;
 import br.com.agendai.agendai.service.ServicoTarefa;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,9 +74,9 @@ public class TarefaControle {
     @PutMapping("/{id}")
     public ResponseEntity<Tarefa> atualizarTarefa(
             @Parameter(description = "ID da tarefa") @PathVariable String id,
-            @Valid @RequestBody RequisicaoCriacaoTarefa request) {
+            @Valid @RequestBody AtualizarTarefa requisicao) {
         log.info("Recebida requisição para atualizar tarefa ID: {}", id);
-        Tarefa tarefaAtualizada = servicoTarefa.atualizarTarefa(id, request);
+        Tarefa tarefaAtualizada = servicoTarefa.atualizarTarefa(id, requisicao);
         return ResponseEntity.ok(tarefaAtualizada);
     }
 

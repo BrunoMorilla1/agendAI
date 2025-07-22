@@ -40,6 +40,7 @@ public class Tarefa {
         this.idTarefa = UUID.randomUUID().toString();
         this.titulo = titulo;
         this.discricao = discricao;
+        this.status = StatusTarefa.PENDENTE;
         this.prioridade = prioridade;
         this.criadoEm = LocalDateTime.now();
         this.atualizadoEm = LocalDateTime.now();
@@ -67,4 +68,5 @@ public class Tarefa {
         this.prioridade = prioridade;
         this.atualizadoEm = LocalDateTime.now();
     }
+
 }

@@ -1,10 +1,7 @@
 package br.com.agendai.agendai.service;
 
 import br.com.agendai.agendai.exception.TarefaNaoEncontradaException;
-import br.com.agendai.agendai.model.PrioridadeTarefa;
-import br.com.agendai.agendai.model.RequisicaoCriacaoTarefa;
-import br.com.agendai.agendai.model.StatusTarefa;
-import br.com.agendai.agendai.model.Tarefa;
+import br.com.agendai.agendai.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +62,7 @@ public class ServicoTarefa {
     /**
      * Atualiza uma tarefa existente
      */
-    public Tarefa atualizarTarefa(String id, RequisicaoCriacaoTarefa requisicao) {
+    public Tarefa atualizarTarefa(String id, AtualizarTarefa requisicao) {
         log.info("Atualizando tarefa ID: {}", id);
 
         Tarefa tarefa = buscarTarefaPorId(id);

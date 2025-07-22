@@ -89,7 +89,29 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
 				</plugin>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.10</version> <!-- versão atual, pode atualizar -->
+					<executions>
+						<!-- Instrumenta o código antes dos testes -->
+						<execution>
+							<id>prepare-agent</id>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
 
+						<!-- Gera o relatório após os testes -->
+						<execution>
+							<id>report</id>
+							<phase>test</phase>
+							<goals>
+								<goal>report</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

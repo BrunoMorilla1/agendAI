@@ -1,16 +1,12 @@
 package br.com.agendai.agendai.controller;
 
 import br.com.agendai.agendai.exception.TarefaNaoEncontradaException;
-import br.com.agendai.agendai.model.RequisicaoCriacaoTarefa;
-import br.com.agendai.agendai.model.Tarefa;
-import br.com.agendai.agendai.model.PrioridadeTarefa;
-import br.com.agendai.agendai.model.StatusTarefa;
+import br.com.agendai.agendai.model.*;
 import br.com.agendai.agendai.service.ObterEstatisticas;
 
 import br.com.agendai.agendai.service.ServicoTarefa;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,16 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-import static com.fasterxml.jackson.databind.cfg.CoercionInputShape.Array;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @WebMvcTest(TarefaControle.class)
 @DisplayName("Testes de Integração do Controlador de Tarefas")
-class TarefaControlleTest {
+class TarefaControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,8 +48,15 @@ class TarefaControlleTest {
                 PrioridadeTarefa.ALTA
 );
 
-    Tarefa tarefaCriada = new Tarefa("1", "Estudar java", "Revisar tarefas",
-            StatusTarefa.PENDENTE, PrioridadeTarefa.ALTA, LocalDateTime.now(), LocalDateTime.now(), null);
+    Tarefa tarefaCriada = new Tarefa(
+            "1",
+            "Estudar java",
+            "Revisar tarefas",
+            StatusTarefa.PENDENTE,
+            PrioridadeTarefa.ALTA,
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            null);
 
     when(servicoTarefa.criarTarefa(any(RequisicaoCriacaoTarefa.class))).thenReturn(tarefaCriada);
 
@@ -62,9 +64,9 @@ class TarefaControlleTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(requisicao)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value("1"))
+        .andExpect(jsonPath("$.idTarefa").value("1"))
         .andExpect(jsonPath("$.titulo").value("Estudar java"))
-        .andExpect(jsonPath("$.descricao").value("Revisar tarefas"))
+        .andExpect(jsonPath("$.discricao").value("Revisar tarefas"))
         .andExpect(jsonPath("$.status").value("PENDENTE"))
         .andExpect(jsonPath("$.prioridade").value("ALTA"));
 
@@ -77,37 +79,37 @@ class TarefaControlleTest {
 
         RequisicaoCriacaoTarefa requisicaoInvalida = new RequisicaoCriacaoTarefa("", "", null);
 
-        mockMvc.perform(post("tarefas"))
+        mockMvc.perform(post("/tarefas")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicaoInvalida))
+                .content(objectMapper.writeValueAsString(requisicaoInvalida)))
         .andExpect(status().isBadRequest());
 
-    verify(servicoTarefa, never().criarTarefa(any(RequisicaoCriacaoTarefa.class)));
+    verify(servicoTarefa, never()).criarTarefa(any(RequisicaoCriacaoTarefa.class));
     }
 
     @Test
     @DisplayName("GET /tarefas - Deve retornar lista de tarefas")
     void deveRetornarListaDeTarefas() throws Exception{
 
-        List<Tarefa> tarefa = Array.asList(
-                new tarefa("1", "Tarefa 1", "Descrição 1", StatusTarefa.PENDENTE, PrioridadeTarefa.ALTA,
+        List<Tarefa> tarefa = Arrays.asList(
+                new Tarefa("1", "Tarefa 1", "Descrição 1", StatusTarefa.PENDENTE, PrioridadeTarefa.ALTA,
                         LocalDateTime.now(), LocalDateTime.now(), null),
-                new tarefa("2", "Tarefa 2", "Descrição 2", StatusTarefa.CONCLUIDA, PrioridadeTarefa.MEDIA,
+                new Tarefa("2", "Tarefa 2", "Descrição 2", StatusTarefa.CONCLUIDA, PrioridadeTarefa.MEDIA,
                         LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now())
         );
 
-     when(servicoTarefa.obterTodasTarefas()).thenReturn(tarefas);
+     when(servicoTarefa.listarTodasTarefas()).thenReturn(tarefa);
 
 
-     mockMvc.perform(get("Tarefas"))
+     mockMvc.perform(get("/tarefas"))
              .andExpect(status().isOk())
              .andExpect(jsonPath("$.length()").value(2))
-             .andExpect(jsonPath("$[0].id").value("1"))
+             .andExpect(jsonPath("$[0].idTarefa").value("1"))
              .andExpect(jsonPath("$[0].titulo").value("Tarefa 1"))
-             .andExpect((jsonPath("$[]1.id").value("2")))
-             .andExpect((jsonPath("$[]1.titulo").value("Tarefa 2")));
+             .andExpect((jsonPath("$[1].idTarefa").value("2")))
+             .andExpect((jsonPath("$[1].titulo").value("Tarefa 2")));
 
-     verify((servicoTarefa).obterTodasTarefas());
+     verify(servicoTarefa).listarTodasTarefas();
     }
 
     @Test
@@ -118,14 +120,14 @@ class TarefaControlleTest {
         Tarefa tarefa = new Tarefa(idTarefa, "Tarefa teste", "Descrição", StatusTarefa.PENDENTE, PrioridadeTarefa.MEDIA,
                 LocalDateTime.now(), LocalDateTime.now(), null);
 
-        when(servicoTarefa.obterTarefaPorId(IdTarefa)).thenReturn(tarefa);
+        when(servicoTarefa.buscarTarefaPorId(idTarefa)).thenReturn(tarefa);
 
         mockMvc.perform(get("/tarefas/{id}", idTarefa))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(idTarefa))
+                .andExpect(jsonPath("$.idTarefa").value(idTarefa))
                 .andExpect(jsonPath("$.titulo").value("Tarefa teste"));
 
-        verify(servicoTarefa).obterTarefaPorId(idTarefa);
+        verify(servicoTarefa).buscarTarefaPorId(idTarefa);
     }
 
     @Test
@@ -133,7 +135,7 @@ class TarefaControlleTest {
     void deveRetornarNotFoundParaTarefaNaoEncontrada() throws Exception{
 
         String idTarefa = "nao-existe";
-        when(servicoTarefa.obter)TarefaPorId(idTarefa)).thenThrow(new TarefaNaoEncontradaException(idTarefa));
+        when(servicoTarefa.buscarTarefaPorId(idTarefa)).thenThrow(new TarefaNaoEncontradaException(idTarefa));
 
 
     mockMvc.perform(get("/tarefas/{id}", idTarefa))
@@ -141,11 +143,11 @@ class TarefaControlleTest {
             .andExpect(jsonPath("$.status").value(404))
             .andExpect(jsonPath("$.erro").value("Tarefa não encontrada"));
 
-        verify(servico  Tarefa).obterTarefaPorId(idTarefa);
+        verify(servicoTarefa).buscarTarefaPorId(idTarefa);
     }
 
     @Test
-    @DisplayName("PUT /tasks/{id} - Deve atualizar tarefa com sucesso")
+    @DisplayName("PUT /tarefas/{id} - Deve atualizar tarefa com sucesso")
     void deveAtualizarTarefa() throws Exception{
 
         String idTarefa = "1";
@@ -163,29 +165,28 @@ class TarefaControlleTest {
                 PrioridadeTarefa.URGENTE,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                null
-        );
+                null);
 
         when(servicoTarefa.atualizarTarefa(eq(idTarefa), any(AtualizarTarefa.class)))
-                .thenReturn((tarefaAtualizada);
+                .thenReturn(tarefaAtualizada);
 
-        mockMvc.perform(put("Tarefa/{id}", idTarefa))
-                .contentType(MediaType.APPLICATION_JSON);
-                .contentType(objectMapper.writeValueAsString(atualizarTarefa));
+        mockMvc.perform(put("/tarefas/{id}", idTarefa)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(atualizarTarefa)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(idTarefa))
-                .andExpect(jsonPath("$.titulo").value("Titulo atuaizado"))
+                .andExpect(jsonPath("$.idTarefa").value(idTarefa))
+                .andExpect(jsonPath("$.titulo").value("Titulo Atualizado"))
                 .andExpect(jsonPath("$.prioridade").value("URGENTE"));
 
         verify(servicoTarefa).atualizarTarefa(eq(idTarefa), any(AtualizarTarefa.class));
     }
     @Test
-    @DisplayName("PATCH /tasks/{id}/complete - Deve marcar tarefa como concluída")
+    @DisplayName("PATCH /tarefas/{id}/complete - Deve marcar tarefa como concluída")
     void deveConcluirTarefa() throws Exception{
 
         String tarefaId = "1";
         Tarefa tarefaConcluida = new Tarefa(
-                idTarefa,
+                tarefaId,
                 "Tarefa",
                 "Descrisção",
                 StatusTarefa.CONCLUIDA,
@@ -195,11 +196,11 @@ class TarefaControlleTest {
                 LocalDateTime.now()
         );
 
-        when(servicoTarefa.concluirTarefa(idTarefa)).thenReturn(tarefaConcluida);
+        when(servicoTarefa.concluirTarefa(tarefaId)).thenReturn(tarefaConcluida);
 
-        mockMvc.perform(patch("/tarefas/{id}/concluir", idTarefa))
+        mockMvc.perform(patch("/tarefas/{id}/concluir", tarefaId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(tarefaId))
+                .andExpect(jsonPath("$.idTarefa").value(tarefaId))
                 .andExpect(jsonPath("$.status").value("CONCLUIDA"));
 
         verify(servicoTarefa).concluirTarefa(tarefaId);
@@ -209,57 +210,64 @@ class TarefaControlleTest {
     @DisplayName("PATCH /tarefas/{id}/reabrir - Deve reabrir tarefa")
     void deveReabrirTarefa() throws Exception{
 
-        Tarefa tarefaReaberta = new Tarefa{
-            idTarefa,
+        String tarefaId = "1";
+        Tarefa tarefaReaberta = new Tarefa(
+            tarefaId,
             "Tarefa",
             "Descrição",
-            Status.PENDENTE,
+            StatusTarefa.PENDENTE,
             PrioridadeTarefa.MEDIA,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            null
-        );
+            null);
 
-        when(servicoTarefa.tarefaReaberta(idTarefa)).thenReturn(tarefaReaberta);
+        when(servicoTarefa.reabrirTarefa(tarefaId)).thenReturn(tarefaReaberta);
 
-        mockMvc.perform(patch("/tarefas/{id}/reabrir", idTarefa))
+        mockMvc.perform(patch("/tarefas/{id}/reabrir", tarefaId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(idTarefa))
+                .andExpect(jsonPath("$.idTarefa").value(tarefaId))
                 .andExpect(jsonPath("$.status").value("PENDENTE"));
 
-        verify(servicoTarefa).reabrirTarefa(IdTarefa);
+        verify(servicoTarefa).reabrirTarefa(tarefaId);
         }
 
      @Test
      @DisplayName("DELETE /tarefas/{id} - Deve excluir tarefa com sucesso")
-     void deveExcluirTarefa() throw Exception{
+     void deveExcluirTarefa() throws Exception{
 
-            String idTarefa = 1;
-            doNothing().when(servicoTarefa).excluirTarefa(idTarefa);
+            String tarefaId = "1";
+            doNothing().when(servicoTarefa).removerTarefa(tarefaId);
 
-            mockMvc.perform(delete("/tarefas/{id}", idTarefa))
+            mockMvc.perform(delete("/tarefas/{id}", tarefaId))
                     .andExpect(status().isNoContent());
 
-            verify(servicoTarefa).excluirTarefa(idTarefa);
+            verify(servicoTarefa).removerTarefa(tarefaId);
         }
 
      @Test
      @DisplayName("GET /tarefas/status/{status} - Deve filtrar tarefas por status")
-     void deveFiltrarTarefasPorStatus() throw Exception{
+     void deveFiltrarTarefasPorStatus() throws Exception{
 
-            statusTarefa status StatusTarefa.CONCLLUIDA;
-            List<Tarefa> tarefasConcluidas = Array.asList(
-                    new Tarefa("1", "Tarefa Concluida", "Descrição", StatusTarefa.CONCLUIDA. PrioridadeTarefa.ALTA,
-                            LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now()));
+            StatusTarefa status = StatusTarefa.CONCLUIDA;
+            List<Tarefa> tarefasConcluidas = Arrays.asList(
+                    new Tarefa(
+                            "1",
+                            "Tarefa Concluida",
+                            "Descrição",
+                            StatusTarefa.CONCLUIDA,
+                            PrioridadeTarefa.ALTA,
+                            LocalDateTime.now(),
+                            LocalDateTime.now(),
+                            LocalDateTime.now()));
 
-            when(taskService.buscarTarefaPorStatus(status)).thenReturn(tarefasConcluidas);
+            when(servicoTarefa.listarTarefasPorStatus(status)).thenReturn(tarefasConcluidas);
 
             mockMvc.perform(get("/tarefas/status/{status}", status))
                     .andExpect((status().isOk()))
                     .andExpect(jsonPath("$.length()").value(1))
                     .andExpect(jsonPath("$[0].status").value("CONCLUIDA"));
 
-            verify(servicoTarefa).buscarTarefasPorSatus(status);
+            verify(servicoTarefa).listarTarefasPorStatus(status);
         }
         @Test
         @DisplayName("GET /tarefas/prioridade/{prioridade} - Deve filtrar tarefas por prioridade")
@@ -271,15 +279,15 @@ class TarefaControlleTest {
                             LocalDateTime.now(), LocalDateTime.now(), null)
             );
 
-            when(servicoTarefa.buscarTarefasPorPrioridade(prioridade)).thenReturn(tarefasPrioridadeAlta);
+            when(servicoTarefa.listarTarefasPorPrioridade(prioridade)).thenReturn(tarefasPrioridadeAlta);
 
             // Quando & Então
             mockMvc.perform(get("/tarefas/prioridade/{prioridade}", prioridade))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(1))
-                    .andExpect(jsonPath("$[0].priority").value("ALTA"));
+                    .andExpect(jsonPath("$[0].prioridade").value("ALTA"));
 
-            verify(servicoTarefa).buscarTarefasPorPrioridade(prioridade);
+            verify(servicoTarefa).listarTarefasPorPrioridade(prioridade);
         }
 
         @Test
@@ -288,20 +296,25 @@ class TarefaControlleTest {
             // Dado
             String termoBusca = "Spring";
             List<Tarefa> resultadosBusca = Arrays.asList(
-                    new Tarefa("1", "Estudar Spring Boot", "Descrição", StatusTarefa.PENDENTE, PrioridadeTarefa.ALTA,
-                            LocalDateTime.now(), LocalDateTime.now(), null)
-            );
+                    new Tarefa(
+                            "1",
+                            "Estudar Spring Boot",
+                            "Descrição",
+                            StatusTarefa.PENDENTE,
+                            PrioridadeTarefa.ALTA,
+                            LocalDateTime.now(),
+                            LocalDateTime.now(),
+                            null));
 
-            when(servicoTarefa.buscarTarefas(termoBusca)).thenReturn(resultadosBusca);
+            when(servicoTarefa.buscarTarefasPorTermo(termoBusca)).thenReturn(resultadosBusca);
 
-            // Quando & Então
             mockMvc.perform(get("/tarefas/buscar")
                             .param("termo", termoBusca))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(1))
-                    .andExpect(jsonPath("$[0].title").value("Estudar Spring Boot"));
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].titulo").value("Estudar Spring Boot"));
 
-            verify(servicoTarefa).buscarTarefas(termoBusca);
+            verify(servicoTarefa).buscarTarefasPorTermo(termoBusca);
         }
 
         @Test
@@ -324,16 +337,15 @@ class TarefaControlleTest {
                     .tarefasPorStatus(tarefasPorStatus)
                     .build();
 
-            when(servicoTarefa.obterEstatisticasTarefas()).thenReturn(estatisticas);
+            when(servicoTarefa.obterEstatisticas()).thenReturn(obterEstatisticas);
 
             mockMvc.perform(get("/tarefas/estatisticas"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalTarefas").value(3))
                     .andExpect(jsonPath("$.tarefasConcluidas").value(1))
                     .andExpect(jsonPath("$.tarefasPendentes").value(2))
-                    .andExpect(jsonPath("$.percentualConclusao").value(33.33333333333333));
+                    .andExpect(jsonPath("$.porcentagemConcluidas").value(33.33333333333333));
 
-            verify(servicoTarefa).obterEstatisticasTarefas();
-        }
+            verify(servicoTarefa).obterEstatisticas();
     }
 }
