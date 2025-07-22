@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-/**
- * Classe que representa as estatísticas das tarefas
- */
 @Data
 @Builder
 @NoArgsConstructor

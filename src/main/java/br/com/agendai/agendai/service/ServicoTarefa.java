@@ -10,20 +10,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * Serviço responsável pela lógica de negócio das tarefas
- * Demonstra o uso de Lambdas e Streams do Java 8+
- */
+
 @Slf4j
 @Service
 public class ServicoTarefa {
 
-    // Simulando um banco de dados em memória usando ConcurrentHashMap para segurança em múltiplas threads
+
     private final Map<String, Tarefa> bancoTarefas = new ConcurrentHashMap<>();
 
-    /**
-     * Cria uma nova tarefa
-     */
     public Tarefa criarTarefa(RequisicaoCriacaoTarefa requisicao) {
         log.info("Criando nova tarefa: {}", requisicao.getTitulo());
 
@@ -34,9 +28,6 @@ public class ServicoTarefa {
         return tarefa;
     }
 
-    /**
-     * Retorna todas as tarefas ordenadas por prioridade
-     */
     public List<Tarefa> listarTodasTarefas() {
         log.info("Buscando todas as tarefas");
 
@@ -49,9 +40,6 @@ public class ServicoTarefa {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Busca uma tarefa pelo ID
-     */
     public Tarefa buscarTarefaPorId(String id) {
         log.info("Buscando tarefa por ID: {}", id);
 
@@ -59,9 +47,6 @@ public class ServicoTarefa {
                 .orElseThrow(() -> new TarefaNaoEncontradaException(id));
     }
 
-    /**
-     * Atualiza uma tarefa existente
-     */
     public Tarefa atualizarTarefa(String id, AtualizarTarefa requisicao) {
         log.info("Atualizando tarefa ID: {}", id);
 
@@ -72,9 +57,6 @@ public class ServicoTarefa {
         return tarefa;
     }
 
-    /**
-     * Marca uma tarefa como concluída
-     */
     public Tarefa concluirTarefa(String id) {
         log.info("Marcando tarefa como concluída. ID: {}", id);
 
@@ -85,9 +67,6 @@ public class ServicoTarefa {
         return tarefa;
     }
 
-    /**
-     * Reabre uma tarefa (marca como pendente)
-     */
     public Tarefa reabrirTarefa(String id) {
         log.info("Reabrindo tarefa. ID: {}", id);
 
@@ -98,9 +77,6 @@ public class ServicoTarefa {
         return tarefa;
     }
 
-    /**
-     * Remove uma tarefa
-     */
     public void removerTarefa(String id) {
         log.info("Removendo tarefa. ID: {}", id);
 
@@ -112,9 +88,6 @@ public class ServicoTarefa {
         log.info("Tarefa removida com sucesso. ID: {}", id);
     }
 
-    /**
-     * Filtra tarefas por status
-     */
     public List<Tarefa> listarTarefasPorStatus(StatusTarefa status) {
         log.info("Filtrando tarefas por status: {}", status);
 
@@ -128,9 +101,6 @@ public class ServicoTarefa {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Filtra tarefas por prioridade
-     */
     public List<Tarefa> listarTarefasPorPrioridade(PrioridadeTarefa prioridade) {
         log.info("Filtrando tarefas por prioridade: {}", prioridade);
 
@@ -141,9 +111,6 @@ public class ServicoTarefa {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Busca tarefas por termo no título ou descrição
-     */
     public List<Tarefa> buscarTarefasPorTermo(String termo) {
         log.info("Buscando tarefas com termo: {}", termo);
 
@@ -162,9 +129,6 @@ public class ServicoTarefa {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Retorna estatísticas das tarefas
-     */
     public ObterEstatisticas obterEstatisticas() {
         log.info("Calculando estatísticas das tarefas");
 
@@ -189,9 +153,6 @@ public class ServicoTarefa {
                 .build();
     }
 
-    /**
-     * Retorna tarefas criadas dentro de um intervalo de datas
-     */
     public List<Tarefa> listarTarefasEntreDatas(LocalDateTime inicio, LocalDateTime fim) {
         log.info("Buscando tarefas criadas entre {} e {}", inicio, fim);
 

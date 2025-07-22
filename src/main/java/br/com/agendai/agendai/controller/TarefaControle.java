@@ -19,9 +19,6 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Controlador REST para operações com tarefas
- */
 @Slf4j
 @RestController
 @RequestMapping("/tarefas")
